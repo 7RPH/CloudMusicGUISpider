@@ -176,7 +176,9 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchcombo.addItem('歌单')
         self.usertab = QTableWidget()
         self.usertab.setColumnCount(3)
-        self.usertab.setHorizontalHeaderLabels(['序号', '名称', '操作'])
+        self.usertab.setRowCount(20)
+        self.usertab.setHorizontalHeaderLabels(['名称', '操作','url'])
+        self.usertab.setColumnHidden(2, True);
         self.searchlayout.addWidget(self.searchIcon, 0, 7, 1, 1)
         self.searchlayout.addWidget(self.searchcombo, 0, 2, 1, 1)
         self.searchlayout.addWidget(self.searchInput, 0, 3, 1, 4)
@@ -217,12 +219,19 @@ class MainUi(QtWidgets.QMainWindow):
             tab.clearContents()
             list=search(driver,self.userdic,str,li)
             print(list)
+            btnlist=[QPushButton('给👴爬') for i in range(len(list))]
             for i,n in enumerate(list):
-                newItem = QTableWidgetItem(i)
-                tab.setItem(i, 0, newItem)
                 newItem = QTableWidgetItem(n[0])
-                tab.setItem(i, 1, newItem)
-            tab.viewport().update()
+                tab.setItem(i, 0, newItem)
+                newItem = QTableWidgetItem(n[1])
+                tab.setItem(i,2,newItem)
+
+                # btnlist[i].clicked.connect(lambda :(print(tab.item(self.tableWidget.indexAt(btnlist[i].parent().pos()).row(),2).text())))
+                tab.setCellWidget(i,1,btnlist[i])
+                print(i,n[1])
+                btnlist[i].clicked.connect(
+                    lambda: (print(tab.item(self.tableWidget.indexAt(btnlist[i].parent().pos()).row(),2).text())))
+            tab.update()
         # 初始化
         self.rightLayout.addWidget(self.search)
 
