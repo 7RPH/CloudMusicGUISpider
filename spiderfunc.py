@@ -46,14 +46,12 @@ def getSongs(user, driver):
     num = input('请选择对应歌单:')
     return list[int(num)]
 
+def giveValue(dic,i,str):
+    dic[i]=str
+    print(dic)
+
 def login(driver,user,pwd,login):
     sleep(0.1)
-    if login==True:
-        #driver.find_elements_by_xpath('/html/body/div[1]/div[1]/div/div[1]/div[1]').click()
-        sleep(0.1)
-        driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]/div[2]/ul[3]/li').click()
-        sleep(0.1)
-        driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]/div[2]/ul[3]/li').click()
     driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]').click()
     sleep(0.1)
     driver.find_element_by_xpath('/html/body/div[6]/div[2]/div/div[2]/div/div[3]').click()
@@ -68,7 +66,6 @@ def login(driver,user,pwd,login):
         pwd + Keys.ENTER)
     sleep(0.1)
     login=True
-    print(whoami(driver))
 
 def whoami(driver):
     sleep(0.1)

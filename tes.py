@@ -94,21 +94,16 @@ class MainUi(QtWidgets.QMainWindow):
             '''QPushButton{background:#FF3333;}''')
         self.leftWidget.setStyleSheet('''
             QPushButton{border:none;color:white;}
-            QPushButton#left_label{
-                border:none;
-                border-bottom:1px solid white;
-                font-size:18px;
-                font-weight:700;
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            }
             QPushButton#left_button:hover{border-left:4px solid white;font-weight:700;}
-            
-            border-top:1px solid darkGray;
-            border-bottom:1px solid darkGray;
-            border-left:1px solid darkGray;
-            border-top-left-radius:10px;
-            border-bottom-left-radius:10px;
-            background:#FF3333;
+            QWidget#leftWidget{
+                border-top:1px solid darkGray;
+                border-bottom:1px solid darkGray;
+                border-left:1px solid darkGray;
+                border-top-left-radius:10px;
+                border-bottom-left-radius:10px;
+                background:#FF3333;
+            }
+
         ''')
         self.rightWidget.setStyleSheet('''
             
@@ -122,22 +117,23 @@ class MainUi(QtWidgets.QMainWindow):
             border-bottom-right-radius:10px;
         }
         QLineEdit{
-                    border:1px solid gray;
-                    width:300px;
-                    border-radius:10px;
-                    padding:2px 4px;
-        }''')
+            border:1px solid gray;
+            width:300px;
+            border-radius:10px;
+            padding:2px 4px;
+        }
+        QPushButton#rightbtn{border:none;color:red;}
+        QPushButton#rightbtn:hover{border-left:4px solid red;font-weight:700;}
+        QComboBox {background-color:#FF3333;color: white;border:1px solid white;border-width: 2px;border-color:#FF6666;border-top-left-radius: 13px;border-bottom-left-radius: 13px;}
+        QComboBox::drop-down {width: 40px;border:0px solid gray;} 
+        QComboBox::hover{border:2px solid #BF5A5D;color: #FF6666;}
+        QComboBox::pressed{ color: #FF6666;}
+        QComboBox::focus{color: white;background-color: #FF6666;}
+        QComboBox::checked{background-color: #FF6666;color:white;}
+        QComboBox QAbstractItemView {color: #FF6666;selection-color: white;selection-background-color: #FF6666;}
+        QComboBox QAbstractItemView::item:selected{	color: white;} ''')
         self.setWindowOpacity(0.9)  # 设置窗口透明度
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # 设置窗口背景透明
-#         self.mainWidget.setStyleSheet('''
-#         QWidget#leftWidget{
-#             background:red;
-#             border-top:1px solid white;
-#             border-bottom:1px solid white;
-#             border-left:1px solid white;
-#             border-top-left-radius:10px;
-#             border-bottom-left-radius:10px;
-# }''')
 
 
         #登录界面
@@ -147,6 +143,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.space=QtWidgets.QWidget()
         self.logntip=QLabel('登录网易云以爬取更多个人歌曲: ',self.user)
         self.save=QtWidgets.QPushButton(qtawesome.icon('fa.sign-in'),'登录')
+        self.save.setObjectName('rightbtn')
         self.labLognUser = QLabel("帐户:", self.user)  # 帐户标签
         self.linLognUser = QLineEdit(self.user)  # 帐户录入框
         self.linLognUser.setPlaceholderText("请输入手机号")
@@ -173,8 +170,8 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchwid = QtWidgets.QWidget()  # 右侧顶部搜索框部件
         self.searchlayout = QtWidgets.QGridLayout()  # 右侧顶部搜索框网格布局
         self.search.setLayout(self.searchlayout)
-        self.searchIcon = QtWidgets.QLabel(''+chr(0xf002) + ' ' + '搜索')
-        self.searchIcon.setFont(qtawesome.font('fa', 16))
+        self.searchIcon = QPushButton(qtawesome.icon('fa.search'),'搜索')
+        self.searchIcon.setObjectName('rightbtn')
         self.searchInput = QtWidgets.QLineEdit()
         self.searchInput.setPlaceholderText("请输入用户, 歌曲或歌单")
         self.searchcombo=QtWidgets.QComboBox()
@@ -184,7 +181,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.usertab=QTableWidget()
         self.usertab.setColumnCount(3)
         self.usertab.setHorizontalHeaderLabels(['序号','用户名','操作'])
-        self.searchlayout.addWidget(self.searchIcon, 0, 1, 1, 1)
+        self.searchlayout.addWidget(self.searchIcon, 0, 7, 1, 1)
         self.searchlayout.addWidget(self.searchcombo,0,2,1,1)
         self.searchlayout.addWidget(self.searchInput, 0, 3, 1, 4)
         self.searchlayout.addWidget(self.usertab,1,1,1,9)
@@ -225,6 +222,9 @@ class MainUi(QtWidgets.QMainWindow):
         #初始化
         self.rightLayout.addWidget(self.search)
 
+        def Writting(tag):
+            print('点到了第',tag,'项 ...')
+
         #操作
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
         logn=False#判定是否已经登录
@@ -236,12 +236,13 @@ class MainUi(QtWidgets.QMainWindow):
         self.userdic={
             'user':'',
             'pwd':'',
-            'searchtype':'user'
+            'name':'',
+            'searchtype':0
         }
 
         #btn互动
+        self.closebtn.clicked.connect(lambda: (driver.quit()))
         self.closebtn.clicked.connect(self.close)
-        self.closebtn.clicked.connect(lambda :(driver.quit()))
         self.minbtn.clicked.connect(self.showMinimized)
         self.maxbtn.clicked.connect(self.showMaximized)
 
@@ -250,7 +251,12 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchbtn.clicked.connect(lambda: (self.rightLayout.itemAt(0).widget().setParent(None),self.rightLayout.insertWidget(0, self.search)))
         self.dwnldbtn.clicked.connect(lambda: (self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.dwnld)))
         self.backbtn.clicked.connect(lambda: (self.rightLayout.itemAt(0).widget().setParent(None),self.rightLayout.insertWidget(0, self.back)))
-        # self.save.clicked.connect(lambda: (self.userdic['user'],self.linLognUser.text()))
+
+        self.searchcombo.currentIndexChanged.connect(lambda: (giveValue(self.userdic,'searchtype',self.searchcombo.currentIndex())))
+        self.searchIcon.clicked.connect(lambda :())
+
+        self.save.clicked.connect(lambda: (giveValue(self.userdic,'user',self.linLognUser.text())))
+        self.save.clicked.connect(lambda: (giveValue(self.userdic,'pwd', self.linLognPwd.text())))
         self.save.clicked.connect(lambda: (login(driver, self.linLognUser.text(), self.linLognPwd.text(), logn)))
 
 
