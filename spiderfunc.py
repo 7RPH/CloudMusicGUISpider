@@ -8,14 +8,13 @@ import openpyxl
 
 
 def getUser(user, driver):
-    url = "https://music.163.com/#/search/m/"
+    url = "https://music.163.com/#/search/m/?type=1002"
     driver.get(url)
     driver.switch_to.frame('g_iframe')
-    sleep(1)
+    sleep(0.1)
     driver.find_element_by_id('m-search-input').send_keys(user)
     driver.find_element_by_id('m-search-input').send_keys(Keys.ENTER)
-    driver.find_element_by_xpath('//*[@class="m-tabs m-tabs-srch f-cb ztag"]/li[8]').click()
-    sleep(1)
+    sleep(0.5)
     tab = driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div[2]/div/table/tbody')
     users = tab.find_elements_by_tag_name('a')
     list = []
@@ -23,10 +22,45 @@ def getUser(user, driver):
         if (i - 1) % 3 == 0:
             tu = (n.get_attribute('title'), n.get_attribute('href'))
             list.append(tu)
-    for i, n in enumerate(list):
-        print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
-    num = input('请输入用户对应序号：')
-    return list[int(num)]
+    return list
+    # for i, n in enumerate(list):
+    #     print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
+    # num = input('请输入用户对应序号：')
+    # return list[int(num)]
+
+def getListSong(str, driver):
+    url = "https://music.163.com/#/search/m/?type=1000"
+    driver.get(url)
+    driver.switch_to.frame('g_iframe')
+    sleep(0.1)
+    driver.find_element_by_id('m-search-input').send_keys(str)
+    driver.find_element_by_id('m-search-input').send_keys(Keys.ENTER)
+    sleep(0.5)
+    tab = driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div[2]/div/table/tbody')
+    lists = tab.find_elements_by_tag_name('a')
+    list = []
+    for i, n in enumerate(lists):
+        if (i - 2) % 4 == 0:
+            tu = (n.get_attribute('title'), n.get_attribute('href'))
+            list.append(tu)
+    return list
+
+def getSongSearch(str, driver):
+    url = "https://music.163.com/#/search/m/?type=1"
+    driver.get(url)
+    driver.switch_to.frame('g_iframe')
+    sleep(0.1)
+    driver.find_element_by_id('m-search-input').send_keys(str)
+    driver.find_element_by_id('m-search-input').send_keys(Keys.ENTER)
+    sleep(0.5)
+    tab = driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div[2]/div/div')
+    songs = tab.find_elements_by_class_name('text')
+    list = []
+    for i, n in enumerate(songs):
+        if i % 3 == 0:
+            tu = (n.find_element_by_tag_name('a').find_element_by_tag_name('b').get_attribute('title'), n.find_element_by_tag_name('a').get_attribute('href'))
+            list.append(tu)
+    return list
 
 
 def getSongs(user, driver):
@@ -50,7 +84,19 @@ def giveValue(dic,i,str):
     dic[i]=str
     print(dic)
 
+def search(driver,dic,str,li):
+    if dic['searchtype']==0:
+        li=getUser(str,driver)
+    elif dic['searchtype']==1:
+        li = getSongSearch(str, driver)
+    elif dic['searchtype']==2:
+        li = getListSong(str, driver)
+    return li
+
+
 def login(driver,user,pwd,login):
+    url = "https://music.163.com/#/search/m/"
+    driver.get(url)
     sleep(0.1)
     driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]').click()
     sleep(0.1)
@@ -69,11 +115,11 @@ def login(driver,user,pwd,login):
 
 def whoami(driver):
     sleep(0.1)
+    driver.get('https://music.163.com/my/')
     driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/ul/li[2]').click()
     return driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div/div[1]/div[1]/div/div[2]/div/div[2]/span[1]').find_element_by_tag_name('a')
 
 def getSong(driver, songsname):
-    login(driver,'13636193157','Frank5379768')
     driver.switch_to.frame('contentFrame')
     sleep(1)
     a = driver.find_elements_by_xpath(
