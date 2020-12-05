@@ -33,22 +33,15 @@ class MainUi(QtWidgets.QMainWindow):
         self.flag = False
         self.setCursor(QCursor(Qt.ArrowCursor))
 
-    def showList(self):
+    def showList(self,list):
         self.usertab.clearContents()
-        list = search(self.driver, self.userdic, self.searchInput.text(), self.li)
-        print(list)
         for i, n in enumerate(list):
             newItem = QTableWidgetItem(n[0])
             self.usertab.setItem(i, 0, newItem)
             newItem = QTableWidgetItem(n[1])
             self.usertab.setItem(i, 1, newItem)
-            self.usertab.update()
             self.usertab.setCellWidget(i, 2, self.buttonForRow())
-            # btnlist[i].clicked.connect(lambda :(print(tab.item(tab.indexAt(btnlist[i].parent().pos()).row(),2).text()))))
-            # tab.setCellWidget(i,1,btnlist[i])
-
-        # for i in range(20):
-        #     print(tab.item(i, 2).text())
+        self.usertab.update()
 
     def buttonForRow(self):
         widget = QtWidgets.QWidget()
@@ -67,7 +60,14 @@ class MainUi(QtWidgets.QMainWindow):
             row = self.usertab.indexAt(button.parent().pos()).row()
             url=self.usertab.item(row,1).text()
             # self.tableWidget.removeRow(row)
-            print(url)
+            if self.userdic['searchtype']==0:
+                li=getSongs(url,self.driver)
+                print('用户',li)
+                self.showList(li)
+            elif self.userdic['searchtype']==1:
+                print('歌曲',url)
+            else:
+                print('歌单',url)
 
     def init_ui(self):
         # 页面布局
@@ -211,11 +211,13 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchcombo.addItem('歌曲')
         self.searchcombo.addItem('歌单')
         self.usertab = QTableWidget()
-        self.usertab.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # 使列表自适应宽度
+
+        #self.usertab.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # 使列表自适应宽度
         self.usertab.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # 设置tablewidget不可编辑
         self.usertab.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)  # 设置tablewidget不可选中
         self.usertab.setColumnCount(3)
         self.usertab.setRowCount(20)
+        self.usertab.setColumnWidth(0, 490)
         self.usertab.setHorizontalHeaderLabels(['名称', 'url','操作'])
         self.usertab.setColumnHidden(1, True);
         self.searchlayout.addWidget(self.searchIcon, 0, 7, 1, 1)
@@ -223,7 +225,6 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchlayout.addWidget(self.searchInput, 0, 3, 1, 4)
         self.searchlayout.addWidget(self.usertab, 1, 1, 1, 9)
         self.searchlayout.addWidget(self.searchwid, 9, 0, 1, 9)
-
         # 下载界面
         self.dwnld = QtWidgets.QWidget()
         self.dwnld.setStyleSheet('''background:blue;
@@ -293,7 +294,7 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.searchcombo.currentIndexChanged.connect(
             lambda: (giveValue(self.userdic, 'searchtype', self.searchcombo.currentIndex())))
-        self.searchIcon.clicked.connect(lambda : (self.showList()))
+        self.searchIcon.clicked.connect(lambda : (self.showList(search(self.driver, self.userdic, self.searchInput.text(), self.li))))
 
         self.save.clicked.connect(lambda: (giveValue(self.userdic, 'user', self.linLognUser.text())))
         self.save.clicked.connect(lambda: (giveValue(self.userdic, 'pwd', self.linLognPwd.text())))

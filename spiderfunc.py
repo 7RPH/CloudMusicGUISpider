@@ -63,9 +63,9 @@ def getSongSearch(str, driver):
     return list
 
 
-def getSongs(user, driver):
-    driver.get(user[1])
-    sleep(1)
+def getSongs(url, driver):
+    driver.get(url)
+    sleep(0.1)
     driver.switch_to.frame('g_iframe')
     box = driver.find_element_by_xpath('//*[@id="cBox"]')
     li = box.find_elements_by_tag_name('a')
@@ -74,11 +74,12 @@ def getSongs(user, driver):
         if i % 3 == 0:
             tu = (n.get_attribute('title'), n.get_attribute('href'))
             list.append(tu)
-    print(user[0] + '创建的歌单如下：')
-    for i, n in enumerate(list):
-        print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
-    num = input('请选择对应歌单:')
-    return list[int(num)]
+    return list
+    # print(user[0] + '创建的歌单如下：')
+    # for i, n in enumerate(list):
+    #     print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
+    # num = input('请选择对应歌单:')
+    # return list[int(num)]
 
 def giveValue(dic,i,str):
     dic[i]=str
