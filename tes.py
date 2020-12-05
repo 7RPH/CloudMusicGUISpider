@@ -14,6 +14,61 @@ class MainUi(QtWidgets.QMainWindow):
         super().__init__()
         self.init_ui()
 
+    def mousePressEvent(self, QMouseEvent):
+        if QMouseEvent.button() == Qt.LeftButton:
+            self.flag = True
+            # 获取鼠标相对窗口的位置
+            self.m_Position = QMouseEvent.globalPos() - self.pos()
+            QMouseEvent.accept()
+            # 更改鼠标图标
+            self.setCursor(QCursor(Qt.OpenHandCursor))
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if Qt.LeftButton and self.flag:
+            # 更改窗口位置
+            self.move(QMouseEvent.globalPos() - self.m_Position)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.flag = False
+        self.setCursor(QCursor(Qt.ArrowCursor))
+
+    def showList(self):
+        self.usertab.clearContents()
+        list = search(self.driver, self.userdic, self.searchInput.text(), self.li)
+        print(list)
+        for i, n in enumerate(list):
+            newItem = QTableWidgetItem(n[0])
+            self.usertab.setItem(i, 0, newItem)
+            newItem = QTableWidgetItem(n[1])
+            self.usertab.setItem(i, 1, newItem)
+            self.usertab.update()
+            self.usertab.setCellWidget(i, 2, self.buttonForRow())
+            # btnlist[i].clicked.connect(lambda :(print(tab.item(tab.indexAt(btnlist[i].parent().pos()).row(),2).text()))))
+            # tab.setCellWidget(i,1,btnlist[i])
+
+        # for i in range(20):
+        #     print(tab.item(i, 2).text())
+
+    def buttonForRow(self):
+        widget = QtWidgets.QWidget()
+        self.newBtn = QtWidgets.QPushButton('给👴爬')
+        self.newBtn.clicked.connect(self.getButton)
+        hLayout = QtWidgets.QHBoxLayout()
+        hLayout.addWidget(self.newBtn)
+        hLayout.setContentsMargins(5, 2, 5, 2)
+        widget.setLayout(hLayout)
+        return widget
+
+    def getButton(self):
+        button = self.sender()
+        if button:
+            # 确定位置的时候这里是关键
+            row = self.usertab.indexAt(button.parent().pos()).row()
+            url=self.usertab.item(row,1).text()
+            # self.tableWidget.removeRow(row)
+            print(url)
+
     def init_ui(self):
         # 页面布局
         self.setWindowTitle('网易云评论获取')
@@ -64,25 +119,6 @@ class MainUi(QtWidgets.QMainWindow):
         self.leftLayout.addWidget(self.mySongbtn, 6, 0, 1, 3)
         self.leftLayout.addWidget(self.dwnldbtn, 8, 0, 1, 3)
         self.leftLayout.addWidget(self.backbtn, 10, 0, 1, 3)
-
-        def mousePressEvent(self, QMouseEvent):
-            if QMouseEvent.button() == Qt.LeftButton:
-                self.flag = True
-                # 获取鼠标相对窗口的位置
-                self.m_Position = QMouseEvent.globalPos() - self.pos()
-                QMouseEvent.accept()
-                # 更改鼠标图标
-                self.setCursor(QCursor(Qt.OpenHandCursor))
-
-        def mouseMoveEvent(self, QMouseEvent):
-            if Qt.LeftButton and self.flag:
-                # 更改窗口位置
-                self.move(QMouseEvent.globalPos() - self.m_Position)
-                QMouseEvent.accept()
-
-        def mouseReleaseEvent(self, QMouseEvent):
-            self.flag = False
-            self.setCursor(QCursor(Qt.ArrowCursor))
 
         # QSS
         self.closebtn.setStyleSheet(
@@ -175,10 +211,13 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchcombo.addItem('歌曲')
         self.searchcombo.addItem('歌单')
         self.usertab = QTableWidget()
+        self.usertab.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)  # 使列表自适应宽度
+        self.usertab.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # 设置tablewidget不可编辑
+        self.usertab.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)  # 设置tablewidget不可选中
         self.usertab.setColumnCount(3)
         self.usertab.setRowCount(20)
-        self.usertab.setHorizontalHeaderLabels(['名称', '操作','url'])
-        self.usertab.setColumnHidden(2, True);
+        self.usertab.setHorizontalHeaderLabels(['名称', 'url','操作'])
+        self.usertab.setColumnHidden(1, True);
         self.searchlayout.addWidget(self.searchIcon, 0, 7, 1, 1)
         self.searchlayout.addWidget(self.searchcombo, 0, 2, 1, 1)
         self.searchlayout.addWidget(self.searchInput, 0, 3, 1, 4)
@@ -215,23 +254,8 @@ class MainUi(QtWidgets.QMainWindow):
         #             border-radius:10px;
         #             padding:2px 4px;
         #     }''')
-        def showList(li,str,tab):
-            tab.clearContents()
-            list=search(driver,self.userdic,str,li)
-            print(list)
-            btnlist=[QPushButton('给👴爬') for i in range(len(list))]
-            for i,n in enumerate(list):
-                newItem = QTableWidgetItem(n[0])
-                tab.setItem(i, 0, newItem)
-                newItem = QTableWidgetItem(n[1])
-                tab.setItem(i,2,newItem)
 
-                # btnlist[i].clicked.connect(lambda :(print(tab.item(self.tableWidget.indexAt(btnlist[i].parent().pos()).row(),2).text())))
-                tab.setCellWidget(i,1,btnlist[i])
-                print(i,n[1])
-                btnlist[i].clicked.connect(
-                    lambda: (print(tab.item(self.tableWidget.indexAt(btnlist[i].parent().pos()).row(),2).text())))
-            tab.update()
+
         # 初始化
         self.rightLayout.addWidget(self.search)
 
@@ -240,18 +264,18 @@ class MainUi(QtWidgets.QMainWindow):
         logn = False  # 判定是否已经登录
         chrome_options = Options()
         # chrome_options.add_argument("--headless")
-        driver = webdriver.Chrome(chrome_options=chrome_options)
+        self.driver = webdriver.Chrome(chrome_options=chrome_options)
         url = "https://music.163.com/#/search/m/"
-        driver.get(url)
+        self.driver.get(url)
         self.userdic = {
             'user': '',
             'pwd': '',
             'name': '',
             'searchtype': 0
         }
-        li = []
+        self.li = []
         # btn互动
-        self.closebtn.clicked.connect(lambda: (driver.quit()))
+        self.closebtn.clicked.connect(lambda: (self.driver.quit()))
         self.closebtn.clicked.connect(self.close)
         self.minbtn.clicked.connect(self.showMinimized)
         self.maxbtn.clicked.connect(self.showMaximized)
@@ -269,11 +293,11 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.searchcombo.currentIndexChanged.connect(
             lambda: (giveValue(self.userdic, 'searchtype', self.searchcombo.currentIndex())))
-        self.searchIcon.clicked.connect(lambda : (showList(li,self.searchInput.text(),self.usertab)))
+        self.searchIcon.clicked.connect(lambda : (self.showList()))
 
         self.save.clicked.connect(lambda: (giveValue(self.userdic, 'user', self.linLognUser.text())))
         self.save.clicked.connect(lambda: (giveValue(self.userdic, 'pwd', self.linLognPwd.text())))
-        self.save.clicked.connect(lambda: (login(driver, self.linLognUser.text(), self.linLognPwd.text(), logn)))
+        self.save.clicked.connect(lambda: (login(self.driver, self.linLognUser.text(), self.linLognPwd.text(), logn)))
 
 
 def main():
