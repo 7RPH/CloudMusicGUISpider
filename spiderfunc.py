@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
@@ -63,9 +65,9 @@ def getSongSearch(str, driver):
     return list
 
 
-def getSongs(url, driver):
-    driver.get(url)
-    sleep(0.1)
+def getSongs(user, driver):
+    driver.get(user[1])
+    sleep(1)
     driver.switch_to.frame('g_iframe')
     box = driver.find_element_by_xpath('//*[@id="cBox"]')
     li = box.find_elements_by_tag_name('a')
@@ -74,12 +76,43 @@ def getSongs(url, driver):
         if i % 3 == 0:
             tu = (n.get_attribute('title'), n.get_attribute('href'))
             list.append(tu)
-    return list
-    # print(user[0] + '创建的歌单如下：')
-    # for i, n in enumerate(list):
-    #     print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
+    print(user[0] + '创建的歌单如下：')
+    for i, n in enumerate(list):
+        print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
     # num = input('请选择对应歌单:')
-    # return list[int(num)]
+    return list
+
+def getAsong(wb,I,i,dicurl,driver):
+    comment = getComment(driver, dicurl, i)
+    sheet = wb.active
+    for n in comment:
+        sheet['A' + str(I)].value = n['歌曲']
+        sheet['B' + str(I)].value = n['用户']
+        sheet['C' + str(I)].value = n['内容']
+        sheet['D' + str(I)].value = n['时间']
+        sheet['E' + str(I)].value = n['点赞数']
+        sheet['F' + str(I)].value = n['类型']
+        sheet['G' + str(I)].value = n['关联评论']
+
+def getSong(songlist,driver,I,wb):
+    driver.get(songlist[1])
+    driver.switch_to.frame('contentFrame')
+    sleep(1)
+    a = driver.find_elements_by_xpath(
+        '/html/body/div[3]/div[1]/div/div/div[2]/div[2]/div/div[1]/table/tbody/tr/td[2]/div/div/div/span/a')
+    b = driver.find_elements_by_xpath(
+        '/html/body/div[3]/div[1]/div/div/div[2]/div[2]/div/div[1]/table/tbody/tr/td[2]/div/div/div/span/a/b')
+    dic = {}
+    for i in range(len(a)):
+        title = b[i].get_attribute('title')
+        dic[title] = [a[i].get_attribute('href')]
+    for i in dic:
+        getAsong(wb,I,i,dic[i][0],driver)
+        I=I+1;
+        if(I>30) :
+            return I;
+    return I;
+
 
 def giveValue(dic,i,str):
     dic[i]=str
@@ -94,6 +127,47 @@ def search(driver,dic,str,li):
         li = getListSong(str, driver)
     return li
 
+def savefile(wb,name,url):
+    num = 0;
+    my_file = Path("{}/{}_{}.xlsx".format(url, name, str(num)))
+    while my_file.is_file( ):
+         num = num + 1;
+         my_file = Path("{}/{}_{}.xlsx".format(url, name, str(num)))
+    wb.save("{}/{}_{}.xlsx".format(url, name, str(num)))
+    print("保存成功！")
+
+def save(driver,dic, str,url,name):
+    wb = openpyxl.Workbook()
+    sheet = wb.active
+    sheet['A1'].value = '歌曲名'
+    sheet['B1'].value = '用户'
+    sheet['C1'].value = '内容'
+    sheet['D1'].value = '时间'
+    sheet['E1'].value = '点赞数'
+    sheet['F1'].value = '类型'
+    sheet['G1'].value = '关联评论'
+    I = 2
+    if dic['searchtype']==0:
+        li = []
+        for i in str:
+            li.append(getSongs(i,driver))
+        print(li)
+        for i in li:
+            for j in i:
+              I=getSong(j,driver,I,wb)
+        name="用户"+name
+
+    elif dic['searchtype']==1:
+        for i in str:
+            getAsong(wb,I,name,i[1],driver)
+            I=I+1
+        name="歌曲"+name
+
+    elif dic['searchtype']==2:
+        for i in str:
+            I=getSong(i,driver,I,wb)
+        name="歌单"+name
+    savefile(wb,name,url)
 
 def login(driver,user,pwd,login):
     url = "https://music.163.com/#/search/m/"
@@ -120,42 +194,7 @@ def whoami(driver):
     driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/ul/li[2]').click()
     return driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div/div[1]/div[1]/div/div[2]/div/div[2]/span[1]').find_element_by_tag_name('a')
 
-def getSong(driver, songsname):
-    driver.switch_to.frame('contentFrame')
-    sleep(1)
-    a = driver.find_elements_by_xpath(
-        '/html/body/div[3]/div[1]/div/div/div[2]/div[2]/div/div[1]/table/tbody/tr/td[2]/div/div/div/span/a')
-    b = driver.find_elements_by_xpath(
-        '/html/body/div[3]/div[1]/div/div/div[2]/div[2]/div/div[1]/table/tbody/tr/td[2]/div/div/div/span/a/b')
-    dic = {}
-    for i in range(len(a)):
-        title = b[i].get_attribute('title')
-        dic[title] = [a[i].get_attribute('href')]
-    wb = openpyxl.Workbook()
-    sheet = wb.active
-    sheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=7)
-    sheet['A1'].value = songsname
-    sheet['A2'].value = '歌曲名'
-    sheet['B2'].value = '用户'
-    sheet['C2'].value = '内容'
-    sheet['D2'].value = '时间'
-    sheet['E2'].value = '点赞数'
-    sheet['F2'].value = '类型'
-    sheet['G2'].value = '关联评论'
-    I = 3
-    for i in dic:
-        # print(i,dic[i][0])
-        comment = getComment(driver, dic[i][0], i)
-        for n in comment:
-            sheet['A' + str(I)].value = n['歌曲']
-            sheet['B' + str(I)].value = n['用户']
-            sheet['C' + str(I)].value = n['内容']
-            sheet['D' + str(I)].value = n['时间']
-            sheet['E' + str(I)].value = n['点赞数']
-            sheet['F' + str(I)].value = n['类型']
-            sheet['G' + str(I)].value = n['关联评论']
-            I += 1
-    wb.save(filename=songsname + '歌单爬取.xlsx')
+
 
 def getComment(driver, url, song):
     driver.get(url)

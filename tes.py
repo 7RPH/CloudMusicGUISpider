@@ -34,6 +34,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.setCursor(QCursor(Qt.ArrowCursor))
 
     def showList(self,list):
+        self.savetext=list
         self.usertab.clearContents()
         for i, n in enumerate(list):
             newItem = QTableWidgetItem(n[0])
@@ -43,6 +44,8 @@ class MainUi(QtWidgets.QMainWindow):
             self.usertab.setCellWidget(i, 2, self.buttonForRow())
         self.usertab.update()
 
+    def SaveList(self):
+        save(self.driver, self.userdic, self.savetext, self.fileT.text(), self.searchInput.text())
     def buttonForRow(self):
         widget = QtWidgets.QWidget()
         self.newBtn = QtWidgets.QPushButton('给👴爬')
@@ -225,10 +228,46 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchlayout.addWidget(self.searchInput, 0, 3, 1, 4)
         self.searchlayout.addWidget(self.usertab, 1, 1, 1, 9)
         self.searchlayout.addWidget(self.searchwid, 9, 0, 1, 9)
+
         # 下载界面
         self.dwnld = QtWidgets.QWidget()
-        self.dwnld.setStyleSheet('''background:blue;
-            ''')
+        self.dwnldlayout = QtWidgets.QGridLayout()
+        self.dwnld.setLayout(self.dwnldlayout)
+        self.file = QtWidgets.QPushButton(self.dwnld)
+        self.fileT = QLineEdit(self.dwnld)
+        self.fileT.setEnabled(False);
+        self.fileS = QtWidgets.QPushButton(self.dwnld)
+        _translate = QtCore.QCoreApplication.translate
+        self.file.setText(_translate("MainWindow", "浏览"))
+        self.fileS.setText(_translate("MainWindow", "保存"))
+        self.dwnldlayout.addWidget(self.file, 2, 4, 2, 1)
+        self.dwnldlayout.addWidget(self.fileT, 2, 1, 2, 3)
+        self.dwnldlayout.addWidget(self.fileS, 2, 5, 2, 1)
+        self.file.clicked.connect(lambda: (self.fileT.setText(QtWidgets.QFileDialog.getExistingDirectory(None, "浏览", "C:/"))))
+        self.fileS.clicked.connect(lambda: (self.SaveList()))
+        self.file.setStyleSheet(
+            "QPushButton{color:white}"
+            "QPushButton{background-color:red}"  # 按键背景色
+            "QPushButton:hover{color:black}"  # 光标移动到上面后的前景色
+            "QPushButton{border-radius:6px}"  # 圆角半径
+            "QPushButton:pressed{background-color:rgb(180,180,180);border: None;}"  # 按下时的样式
+        )
+        self.fileS.setStyleSheet(
+            "QPushButton{color:white}"
+            "QPushButton{background-color:red}"  # 按键背景色
+            "QPushButton:hover{color:black}"  # 光标移动到上面后的前景色
+            "QPushButton{border-radius:6px}"  # 圆角半径
+            "QPushButton:pressed{background-color:rgb(180,180,180);border: None;}"  # 按下时的样式
+        )
+        self.fileT.setStyleSheet(
+            "QLineEdit{color:black}"
+            "QLineEdit{background-color:white}"  # 按键背景色
+            "QLineEdit:hover{color:red}"  # 光标移动到上面后的前景色
+            "QLineEdit{border-color:red}"
+            "QLineEdit{border-radius:6px}"  # 圆角半径
+        )
+
+
 
         # 反馈界面
         self.back = QtWidgets.QWidget()
@@ -294,7 +333,7 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.searchcombo.currentIndexChanged.connect(
             lambda: (giveValue(self.userdic, 'searchtype', self.searchcombo.currentIndex())))
-        self.searchIcon.clicked.connect(lambda : (self.showList(search(self.driver, self.userdic, self.searchInput.text(), self.li))))
+        self.searchIcon.clicked.connect(lambda : (self.showList(search(self.driver, self.userdic, self.searchInput.text(),self.li))))
 
         self.save.clicked.connect(lambda: (giveValue(self.userdic, 'user', self.linLognUser.text())))
         self.save.clicked.connect(lambda: (giveValue(self.userdic, 'pwd', self.linLognPwd.text())))
