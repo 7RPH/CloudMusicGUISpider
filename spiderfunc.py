@@ -113,6 +113,21 @@ def getSong(songlist,driver,I,wb):
             return I;
     return I;
 
+def getASonglist(songlist,driver):
+    driver.get(songlist[1])
+    driver.switch_to.frame('contentFrame')
+    sleep(1)
+    a = driver.find_elements_by_xpath(
+        '/html/body/div[3]/div[1]/div/div/div[2]/div[2]/div/div[1]/table/tbody/tr/td[2]/div/div/div/span/a')
+    b = driver.find_elements_by_xpath(
+        '/html/body/div[3]/div[1]/div/div/div[2]/div[2]/div/div[1]/table/tbody/tr/td[2]/div/div/div/span/a/b')
+    li = []
+    for i in range(len(a)):
+        dic=[]
+        dic.append(b[i].get_attribute('title'))
+        dic.append(a[i].get_attribute('href'))
+        li.append(dic)
+    return li;
 
 def giveValue(dic,i,str):
     dic[i]=str
@@ -147,6 +162,8 @@ def save(driver,dic, str,url,name):
     sheet['F1'].value = '类型'
     sheet['G1'].value = '关联评论'
     I = 2
+    print(str)
+    print(dic['searchtype'])
     if dic['searchtype']==0:
         li = []
         for i in str:

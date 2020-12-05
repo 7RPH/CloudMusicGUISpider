@@ -59,18 +59,29 @@ class MainUi(QtWidgets.QMainWindow):
     def getButton(self):
         button = self.sender()
         if button:
-            # 确定位置的时候这里是关键
             row = self.usertab.indexAt(button.parent().pos()).row()
-            url=self.usertab.item(row,1).text()
+            nowuser=[];
+            nowuser.append(self.usertab.item(row,0).text())
+            nowuser.append(self.usertab.item(row,1).text())
             # self.tableWidget.removeRow(row)
+            nowname=self.searchInput.text()
             if self.userdic['searchtype']==0:
-                li=getSongs(url,self.driver)
-                print('用户',li)
+                li=getSongs(nowuser,self.driver)
                 self.showList(li)
+                self.searchInput.setText(nowname+"_"+nowuser[0])
+                self.userdic['searchtype']=2
+                self.searchcombo.setCurrentIndex(2)
             elif self.userdic['searchtype']==1:
-                print('歌曲',url)
+                print("歌曲")
             else:
-                print('歌单',url)
+                self.userdic['searchtype']=1
+                li=getASonglist(nowuser,self.driver)
+                self.searchInput.setText(nowname+"_"+nowuser[0])
+                self.searchcombo.setCurrentIndex(1)
+                self.showList(li)
+
+
+
 
     def init_ui(self):
         # 页面布局
