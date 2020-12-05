@@ -48,10 +48,11 @@ class MainUi(QtWidgets.QMainWindow):
         save(self.driver, self.userdic, self.savetext, self.fileT.text(), self.searchInput.text())
     def buttonForRow(self):
         widget = QtWidgets.QWidget()
-        self.newBtn = QtWidgets.QPushButton('给👴爬')
-        self.newBtn.clicked.connect(self.getButton)
         hLayout = QtWidgets.QHBoxLayout()
-        hLayout.addWidget(self.newBtn)
+        if self.userdic['searchtype']!=1:
+            self.newBtn = QtWidgets.QPushButton('给👴爬')
+            self.newBtn.clicked.connect(self.getButton)
+            hLayout.addWidget(self.newBtn)
         hLayout.setContentsMargins(5, 2, 5, 2)
         widget.setLayout(hLayout)
         return widget
@@ -60,7 +61,7 @@ class MainUi(QtWidgets.QMainWindow):
         button = self.sender()
         if button:
             row = self.usertab.indexAt(button.parent().pos()).row()
-            nowuser=[];
+            nowuser=[]
             nowuser.append(self.usertab.item(row,0).text())
             nowuser.append(self.usertab.item(row,1).text())
             # self.tableWidget.removeRow(row)
@@ -80,7 +81,13 @@ class MainUi(QtWidgets.QMainWindow):
                 self.searchcombo.setCurrentIndex(1)
                 self.showList(li)
 
-
+    def lognUI(self):
+        giveValue(self.userdic, 'user', self.linLognUser.text())
+        giveValue(self.userdic, 'pwd', self.linLognPwd.text())
+        login(self.driver, self.userdic)
+        if self.userdic['lognStatus']==1:
+            newLabel=QLabel('登录成功，欢迎您!'+self.userdic['name'],self.user)
+            self.userlayout.addWidget(newLabel, 5, 4, 1, 1)
 
 
     def init_ui(self):
@@ -322,14 +329,16 @@ class MainUi(QtWidgets.QMainWindow):
             'user': '',
             'pwd': '',
             'name': '',
-            'searchtype': 0
+            'lognStatus':0,
+            'searchtype': 0,
+            'url':''
         }
         self.li = []
         # btn互动
         self.closebtn.clicked.connect(lambda: (self.driver.quit()))
         self.closebtn.clicked.connect(self.close)
         self.minbtn.clicked.connect(self.showMinimized)
-        self.maxbtn.clicked.connect(self.showMaximized)
+        #self.maxbtn.clicked.connect(self.showMaximized)
 
         self.userbtn.clicked.connect(
             lambda: (self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.user)))
@@ -346,9 +355,9 @@ class MainUi(QtWidgets.QMainWindow):
             lambda: (giveValue(self.userdic, 'searchtype', self.searchcombo.currentIndex())))
         self.searchIcon.clicked.connect(lambda : (self.showList(search(self.driver, self.userdic, self.searchInput.text(),self.li))))
 
-        self.save.clicked.connect(lambda: (giveValue(self.userdic, 'user', self.linLognUser.text())))
-        self.save.clicked.connect(lambda: (giveValue(self.userdic, 'pwd', self.linLognPwd.text())))
-        self.save.clicked.connect(lambda: (login(self.driver, self.linLognUser.text(), self.linLognPwd.text(), logn)))
+        # self.save.clicked.connect(lambda: (giveValue(self.userdic, 'user', self.linLognUser.text())))
+        # self.save.clicked.connect(lambda: (giveValue(self.userdic, 'pwd', self.linLognPwd.text())))
+        self.save.clicked.connect(self.lognUI)
 
 
 def main():

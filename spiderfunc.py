@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 import re
@@ -108,10 +109,10 @@ def getSong(songlist,driver,I,wb):
         dic[title] = [a[i].get_attribute('href')]
     for i in dic:
         getAsong(wb,I,i,dic[i][0],driver)
-        I=I+1;
+        I=I+1
         if(I>30) :
-            return I;
-    return I;
+            return I
+    return I
 
 def getASonglist(songlist,driver):
     driver.get(songlist[1])
@@ -127,7 +128,7 @@ def getASonglist(songlist,driver):
         dic.append(b[i].get_attribute('title'))
         dic.append(a[i].get_attribute('href'))
         li.append(dic)
-    return li;
+    return li
 
 def giveValue(dic,i,str):
     dic[i]=str
@@ -186,9 +187,13 @@ def save(driver,dic, str,url,name):
         name="歌单"+name
     savefile(wb,name,url)
 
-def login(driver,user,pwd,login):
+def login(driver,dic):
     url = "https://music.163.com/#/search/m/"
     driver.get(url)
+    if dic['lognStatus'] == 1:
+        ActionChains(driver).move_to_element(driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]/div[1]')).perform()
+        driver.find_element_by_class_name('itm-3').click()
+
     sleep(0.1)
     driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]').click()
     sleep(0.1)
@@ -198,12 +203,18 @@ def login(driver,user,pwd,login):
     sleep(0.1)
     driver.find_element_by_xpath('/html/body/div[6]/div[2]/div/div[1]/div[1]/div[1]/div[2]').click()
     sleep(0.1)
-    driver.find_element_by_xpath('/html/body/div[6]/div[2]/div/div[1]/div[1]/div/div/input').send_keys(user)
+    driver.find_element_by_xpath('/html/body/div[6]/div[2]/div/div[1]/div[1]/div/div/input').send_keys(dic['user'])
     sleep(0.1)
     driver.find_element_by_xpath('/html/body/div[6]/div[2]/div/div[1]/div[2]/input').send_keys(
-        pwd + Keys.ENTER)
-    sleep(0.1)
-    login=True
+        dic['pwd'] + Keys.ENTER)
+    sleep(0.5)
+    dic['lognStatus']=1
+    dic['url']=driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]/a').get_attribute('href')
+    driver.get(dic['url'])
+    sleep(1)
+    dic['name'] = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/div[1]/a').get_attribute('textContent')
+    print(dic)
+
 
 def whoami(driver):
     sleep(0.1)
@@ -276,7 +287,16 @@ def getComment(driver, url, song):
 
 # chrome_options = Options()
 # chrome_options.add_argument("--headless")
-# driver = webdriver.Chrome(chrome_options=chrome_options)
+# driver = webdriver.Chrome()
+# dic = {
+#             'user': '13636193157',
+#             'pwd': 'Frank5379768',
+#             'name': '',
+#             'lognStatus':0,
+#             'searchtype': 0,
+#             'url':''
+#         }
+# login(driver,dic)
 # user = input('请输入你要查找的用户：')
 # li = getUser(user, driver)
 # songs = getSongs(li, driver)
