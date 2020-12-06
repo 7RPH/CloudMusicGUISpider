@@ -35,6 +35,7 @@ class MainUi(QtWidgets.QMainWindow):
 
     def showList(self,list):
         self.savetext=list
+        self.usertab.setRowCount(len(list))
         self.usertab.clearContents()
         for i, n in enumerate(list):
             newItem = QTableWidgetItem(n[0])
@@ -44,8 +45,47 @@ class MainUi(QtWidgets.QMainWindow):
             self.usertab.setCellWidget(i, 2, self.buttonForRow())
         self.usertab.update()
 
+    def myList(self):
+        if self.userdic['lognStatus']==0:
+            print('ok')
+            newLabel=QLabel("尚未登录，请先登录!",self.mySong)
+            self.mySongLayout.addWidget(newLabel, 1, 3, 1, 1)
+        else:
+            if self.userdic['myLoad']==0:
+                for i in range(self.mySongLayout.count()):
+                    self.mySongLayout.itemAt(i).widget().deleteLater()
+                newLabel = QLabel("欢迎您, " + self.userdic['name'] + ' 您的歌单列表如下, 请选中歌单后去下载管理进行爬取', self.mySong)
+                li = getSongs([self.userdic['name'], self.userdic['url']], self.driver)
+                self.mytab.setRowCount(len(li))
+                self.mytab.clearContents()
+                for i, n in enumerate(li):
+                    newItem = QTableWidgetItem(n[0])
+                    self.mytab.setItem(i, 0, newItem)
+                    newItem = QTableWidgetItem(n[1])
+                    self.mytab.setItem(i, 1, newItem)
+                    self.mytab.setCellWidget(i, 2, self.mySongBtnForRow())
+                self.mytab.update()
+                self.mySongLayout.addWidget(newLabel, 0, 1, 1, 1)
+                self.mySongLayout.addWidget(self.mytab, 1, 1, 1, 9)
+                self.userdic['myLoad']=1
+
+        self.rightLayout.itemAt(0).widget().setParent(None)
+        self.rightLayout.insertWidget(0, self.mySong)
+
+
     def SaveList(self):
         save(self.driver, self.userdic, self.savetext, self.fileT.text(), self.searchInput.text())
+    def mySongBtnForRow(self):
+        widget = QtWidgets.QWidget()
+        hLayout = QtWidgets.QHBoxLayout()
+        if self.userdic['searchtype'] != 1:
+            self.newBtn = QtWidgets.QPushButton('给👴爬')
+            self.newBtn.clicked.connect(self.getMyButton)
+            hLayout.addWidget(self.newBtn)
+        hLayout.setContentsMargins(5, 2, 5, 2)
+        widget.setLayout(hLayout)
+        return widget
+
     def buttonForRow(self):
         widget = QtWidgets.QWidget()
         hLayout = QtWidgets.QHBoxLayout()
@@ -56,6 +96,25 @@ class MainUi(QtWidgets.QMainWindow):
         hLayout.setContentsMargins(5, 2, 5, 2)
         widget.setLayout(hLayout)
         return widget
+
+    def getMyButton(self):
+        button = self.sender()
+        if button:
+            row = self.mytab.indexAt(button.parent().pos()).row()
+            nowuser = []
+            nowuser.append(self.mytab.item(row, 0).text())
+            nowuser.append(self.mytab.item(row, 1).text())
+            nowname = self.searchInput.text()
+            li = getASonglist(nowuser, self.driver)
+            self.mytab.setRowCount(len(li))
+            self.mytab.clearContents()
+            for i, n in enumerate(li):
+                newItem = QTableWidgetItem(n[0])
+                self.mytab.setItem(i, 0, newItem)
+                newItem = QTableWidgetItem(n[1])
+                self.mytab.setItem(i, 1, newItem)
+            self.mytab.update()
+
 
     def getButton(self):
         button = self.sender()
@@ -87,6 +146,7 @@ class MainUi(QtWidgets.QMainWindow):
         login(self.driver, self.userdic)
         if self.userdic['lognStatus']==1:
             newLabel=QLabel('登录成功，欢迎您!'+self.userdic['name'],self.user)
+            self.userdic['myLoad']=0
             self.userlayout.addWidget(newLabel, 5, 4, 1, 1)
 
 
@@ -216,7 +276,18 @@ class MainUi(QtWidgets.QMainWindow):
 
         # 我的音乐列表
         self.mySong = QtWidgets.QWidget()
-        self.mySong.setStyleSheet("background-color:pink;")
+        self.mySongLayout=QGridLayout()
+        self.mySong.setLayout(self.mySongLayout)
+        self.mytab = QTableWidget()
+        self.mytab.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # 设置tablewidget不可编辑
+        self.mytab.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)  # 设置tablewidget不可选中
+        self.mytab.setColumnCount(3)
+        self.mytab.setRowCount(20)
+        self.mytab.setColumnWidth(0, 490)
+        self.mytab.setHorizontalHeaderLabels(['名称', 'url', '操作'])
+        self.mytab.setColumnHidden(1, True)
+
+
 
         # 搜索界面
         self.search = QtWidgets.QWidget()
@@ -331,7 +402,8 @@ class MainUi(QtWidgets.QMainWindow):
             'name': '',
             'lognStatus':0,
             'searchtype': 0,
-            'url':''
+            'url':'',
+            'myLoad':0
         }
         self.li = []
         # btn互动
@@ -342,8 +414,9 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.userbtn.clicked.connect(
             lambda: (self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.user)))
-        self.mySongbtn.clicked.connect(lambda: (
-        self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.mySong)))
+        # self.mySongbtn.clicked.connect(lambda: (
+        # self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.mySong)))
+        self.mySongbtn.clicked.connect(self.myList)
         self.searchbtn.clicked.connect(lambda: (
         self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.search)))
         self.dwnldbtn.clicked.connect(

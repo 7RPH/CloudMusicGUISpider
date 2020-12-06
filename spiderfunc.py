@@ -94,6 +94,8 @@ def getAsong(wb,I,i,dicurl,driver):
         sheet['E' + str(I)].value = n['点赞数']
         sheet['F' + str(I)].value = n['类型']
         sheet['G' + str(I)].value = n['关联评论']
+        I+=1
+    return I
 
 def getSong(songlist,driver,I,wb):
     driver.get(songlist[1])
@@ -109,9 +111,6 @@ def getSong(songlist,driver,I,wb):
         dic[title] = [a[i].get_attribute('href')]
     for i in dic:
         getAsong(wb,I,i,dic[i][0],driver)
-        I=I+1
-        if(I>30) :
-            return I
     return I
 
 def getASonglist(songlist,driver):
@@ -177,9 +176,8 @@ def save(driver,dic, str,url,name):
 
     elif dic['searchtype']==1:
         for i in str:
-            getAsong(wb,I,name,i[1],driver)
-            I=I+1
-        name="歌曲"+name
+            I=getAsong(wb,I,i[0],i[1],driver)+1
+        name="歌曲:"+name
 
     elif dic['searchtype']==2:
         for i in str:
