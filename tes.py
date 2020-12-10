@@ -60,6 +60,8 @@ class MainUi(QtWidgets.QMainWindow):
                     self.mySongLayout.itemAt(i).widget().deleteLater()
                 newLabel = QLabel("欢迎您, " + self.userdic['name'] + ' 您的歌单列表如下, 请选中歌单后去下载管理进行爬取', self.mySong)
                 li = getSongs([self.userdic['name'], self.userdic['url']], self.driver)
+                self.myMusictext=self.userdic['name'];
+                self.mysavetext=li;
                 self.mytab.setRowCount(len(li))
                 self.mytab.clearContents()
                 for i, n in enumerate(li):
@@ -68,6 +70,7 @@ class MainUi(QtWidgets.QMainWindow):
                     newItem = QTableWidgetItem(n[1])
                     self.mytab.setItem(i, 1, newItem)
                     self.mytab.setCellWidget(i, 2, self.mySongBtnForRow())
+                self.myuserdic['searchtype']=2; #我的音乐当前为歌单
                 self.mytab.update()
                 self.mySongLayout.addWidget(newLabel, 0, 1, 1, 1)
                 self.mySongLayout.addWidget(self.mytab, 1, 1, 1, 9)
@@ -77,8 +80,17 @@ class MainUi(QtWidgets.QMainWindow):
         self.rightLayout.insertWidget(0, self.mySong)
 
 
-    def SaveList(self):
-        save(self.driver, self.userdic, self.savetext, self.fileT.text(), self.searchInput.text())
+    def SaveList(self,flag):
+            try:
+                if flag == 0:
+                    save(self.driver, self.userdic, self.savetext, self.fileT.text(), self.searchInput.text())
+                else:
+                    save(self.driver, self.myuserdic, self.mysavetext, self.fileT.text(), self.myMusictext)
+            except:
+                QMessageBox.information(self, "错误", "请求内容为空!")
+            else:
+                QMessageBox.information(self, "下载", "文件保存成功!")
+
     def mySongBtnForRow(self):
         widget = QtWidgets.QWidget()
         hLayout = QtWidgets.QHBoxLayout()
@@ -109,6 +121,7 @@ class MainUi(QtWidgets.QMainWindow):
             nowuser.append(self.mytab.item(row, 1).text())
             nowname = self.searchInput.text()
             li = getASonglist(nowuser, self.driver)
+            self.mysavetext = li;
             if li == None:
                 self.usertab.clearContents()
                 QMessageBox.information(self, "肥肠包钱", "出了点小状况呢", QMessageBox.Yes)
@@ -121,6 +134,8 @@ class MainUi(QtWidgets.QMainWindow):
                     newItem = QTableWidgetItem(n[1])
                     self.mytab.setItem(i, 1, newItem)
                 self.mytab.update()
+                self.myMusictext=self.myMusictext+"_"+nowuser[0];
+                self.myuserdic['searchtype'] = 1;  # 我的音乐当前为歌曲
 
 
     def getButton(self):
@@ -157,13 +172,15 @@ class MainUi(QtWidgets.QMainWindow):
             self.userlayout.addWidget(newLabel, 5, 4, 1, 1)
             print(self.userlayout.count())
         else:
-            if self.userlayout.count()>=8:
-                self.userlayout.itemAt(7).widget().setParent(None)
+            for i in range(self.userlayout.count()+1):
+                     if i >= 7:
+                         self.userlayout.itemAt(i).widget().setParent(None)
             QMessageBox.information(self, "肥肠包钱", "登录失败,请重试", QMessageBox.Yes)
 
 
     def init_ui(self):
         # 页面布局
+        self.myuserdic= {'searchtype' : 0}
         self.setWindowTitle('网易云评论获取')
         self.setFixedSize(960, 700)
         self.mainWidget = QtWidgets.QWidget()  # 创建窗口主部件
@@ -334,18 +351,23 @@ class MainUi(QtWidgets.QMainWindow):
         self.dwnld = QtWidgets.QWidget()
         self.dwnldlayout = QtWidgets.QGridLayout()
         self.dwnld.setLayout(self.dwnldlayout)
+
         self.file = QtWidgets.QPushButton(self.dwnld)
         self.fileT = QLineEdit(self.dwnld)
         self.fileT.setEnabled(False);
         self.fileS = QtWidgets.QPushButton(self.dwnld)
+        self.myfileS = QtWidgets.QPushButton(self.dwnld)
         _translate = QtCore.QCoreApplication.translate
         self.file.setText(_translate("MainWindow", "浏览"))
-        self.fileS.setText(_translate("MainWindow", "保存"))
+        self.fileS.setText(_translate("MainWindow", "保存搜索结果"))
+        self.myfileS.setText(_translate("MainWindow", "保存我的音乐"))
         self.dwnldlayout.addWidget(self.file, 2, 4, 2, 1)
         self.dwnldlayout.addWidget(self.fileT, 2, 1, 2, 3)
-        self.dwnldlayout.addWidget(self.fileS, 2, 5, 2, 1)
+        self.dwnldlayout.addWidget(self.fileS, 3, 1, 2, 1)
+        self.dwnldlayout.addWidget(self.myfileS, 3, 3, 2, 1)
         self.file.clicked.connect(lambda: (self.fileT.setText(QtWidgets.QFileDialog.getExistingDirectory(None, "浏览", "C:/"))))
-        self.fileS.clicked.connect(lambda: (self.SaveList()))
+        self.fileS.clicked.connect(lambda: (self.SaveList(flag=0)))
+        self.myfileS.clicked.connect(lambda: (self.SaveList(flag=1)))
         self.file.setStyleSheet(
             "QPushButton{color:white}"
             "QPushButton{background-color:red}"  # 按键背景色
@@ -353,6 +375,14 @@ class MainUi(QtWidgets.QMainWindow):
             "QPushButton{border-radius:6px}"  # 圆角半径
             "QPushButton:pressed{background-color:rgb(180,180,180);border: None;}"  # 按下时的样式
         )
+        self.myfileS.setStyleSheet(
+            "QPushButton{color:white}"
+            "QPushButton{background-color:red}"  # 按键背景色
+            "QPushButton:hover{color:black}"  # 光标移动到上面后的前景色
+            "QPushButton{border-radius:6px}"  # 圆角半径
+            "QPushButton:pressed{background-color:rgb(180,180,180);border: None;}"  # 按下时的样式
+        )
+
         self.fileS.setStyleSheet(
             "QPushButton{color:white}"
             "QPushButton{background-color:red}"  # 按键背景色

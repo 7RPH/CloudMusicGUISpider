@@ -193,7 +193,7 @@ def save(driver,dic, str,url,name):
     elif dic['searchtype']==1:
         for i in str:
             I=getAsong(wb,I,i[0],i[1],driver)+1
-        name="歌曲:"+name
+        name="歌曲"+name
 
     elif dic['searchtype']==2:
         for i in str:
