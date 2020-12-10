@@ -35,15 +35,19 @@ class MainUi(QtWidgets.QMainWindow):
 
     def showList(self,list):
         self.savetext=list
-        self.usertab.setRowCount(len(list))
-        self.usertab.clearContents()
-        for i, n in enumerate(list):
-            newItem = QTableWidgetItem(n[0])
-            self.usertab.setItem(i, 0, newItem)
-            newItem = QTableWidgetItem(n[1])
-            self.usertab.setItem(i, 1, newItem)
-            self.usertab.setCellWidget(i, 2, self.buttonForRow())
-        self.usertab.update()
+        if list==None:
+            self.usertab.clearContents()
+            QMessageBox.information(self, "肥肠包钱", "出了点小状况呢", QMessageBox.Yes)
+        else:
+            self.usertab.setRowCount(len(list))
+            self.usertab.clearContents()
+            for i, n in enumerate(list):
+                newItem = QTableWidgetItem(n[0])
+                self.usertab.setItem(i, 0, newItem)
+                newItem = QTableWidgetItem(n[1])
+                self.usertab.setItem(i, 1, newItem)
+                self.usertab.setCellWidget(i, 2, self.buttonForRow())
+            self.usertab.update()
 
     def myList(self):
         if self.userdic['lognStatus']==0:
@@ -78,10 +82,9 @@ class MainUi(QtWidgets.QMainWindow):
     def mySongBtnForRow(self):
         widget = QtWidgets.QWidget()
         hLayout = QtWidgets.QHBoxLayout()
-        if self.userdic['searchtype'] != 1:
-            self.newBtn = QtWidgets.QPushButton('给👴爬')
-            self.newBtn.clicked.connect(self.getMyButton)
-            hLayout.addWidget(self.newBtn)
+        self.newBtn = QtWidgets.QPushButton('给👴爬')
+        self.newBtn.clicked.connect(self.getMyButton)
+        hLayout.addWidget(self.newBtn)
         hLayout.setContentsMargins(5, 2, 5, 2)
         widget.setLayout(hLayout)
         return widget
@@ -106,14 +109,18 @@ class MainUi(QtWidgets.QMainWindow):
             nowuser.append(self.mytab.item(row, 1).text())
             nowname = self.searchInput.text()
             li = getASonglist(nowuser, self.driver)
-            self.mytab.setRowCount(len(li))
-            self.mytab.clearContents()
-            for i, n in enumerate(li):
-                newItem = QTableWidgetItem(n[0])
-                self.mytab.setItem(i, 0, newItem)
-                newItem = QTableWidgetItem(n[1])
-                self.mytab.setItem(i, 1, newItem)
-            self.mytab.update()
+            if li == None:
+                self.usertab.clearContents()
+                QMessageBox.information(self, "肥肠包钱", "出了点小状况呢", QMessageBox.Yes)
+            else:
+                self.mytab.setRowCount(len(li))
+                self.mytab.clearContents()
+                for i, n in enumerate(li):
+                    newItem = QTableWidgetItem(n[0])
+                    self.mytab.setItem(i, 0, newItem)
+                    newItem = QTableWidgetItem(n[1])
+                    self.mytab.setItem(i, 1, newItem)
+                self.mytab.update()
 
 
     def getButton(self):
@@ -148,6 +155,11 @@ class MainUi(QtWidgets.QMainWindow):
             newLabel=QLabel('登录成功，欢迎您!'+self.userdic['name'],self.user)
             self.userdic['myLoad']=0
             self.userlayout.addWidget(newLabel, 5, 4, 1, 1)
+            print(self.userlayout.count())
+        else:
+            if self.userlayout.count()>=8:
+                self.userlayout.itemAt(7).widget().setParent(None)
+            QMessageBox.information(self, "肥肠包钱", "登录失败,请重试", QMessageBox.Yes)
 
 
     def init_ui(self):
