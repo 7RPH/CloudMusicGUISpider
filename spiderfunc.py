@@ -30,10 +30,6 @@ def getUser(user, driver):
             tu = (n.get_attribute('title'), n.get_attribute('href'))
             list.append(tu)
     return list
-    # for i, n in enumerate(list):
-    #     print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
-    # num = input('请输入用户对应序号：')
-    # return list[int(num)]
 
 def getListSong(str, driver):
     url = "https://music.163.com/#/search/m/?type=1000"
@@ -96,7 +92,6 @@ def getSongs(user, driver):
     print(user[0] + '创建的歌单如下：')
     for i, n in enumerate(list):
         print('[' + str(i) + ']\t' + n[0] + '\t' + n[1])
-    # num = input('请选择对应歌单:')
     return list
 
 def getAsong(wb,I,i,dicurl,driver):
@@ -248,26 +243,9 @@ def getComment(driver, url, song):
     driver.get(url)
     sleep(1)
     driver.switch_to.frame('g_iframe')
-    # comment=driver.find_elements_by_xpath('/html/body/div[3]/div[1]/div/div/div[2]/div/div[2]/div[2]/div/div[2]')
-    # print(song)
-    # for n, i in enumerate(comment):
-    #     if n >= 15:
-    #         break
-    #     print(i.get_attribute('textContent'))
-    #     text = i.get_attribute('textContent')
-    #     li = re.findall(r'(.*?)：(.*)20(.*?)日 [(](.*?)[)][|]回复', text)[0]
-    #     print(li)
-    #     content = {
-    #         '用户': li[0],
-    #         '内容': li[1],
-    #         '时间': '20' + li[2] + '日',
-    #         '点赞数': li[3]
-    #     }
-    #     print(content)
     try:
         client = driver.find_elements_by_xpath(
         '/html/body/div[3]/div[1]/div/div/div[2]/div/div[2]/div[2]/div/div[2]/div[1]/div/a')
-    # content=driver.find_elements_by_xpath('/html/body/div[3]/div[1]/div/div/div[2]/div/div[2]/div[2]/div/div[2]/div[1]/div')
         time = driver.find_elements_by_xpath(
         '/html/body/div[3]/div[1]/div/div/div[2]/div/div[2]/div[2]/div/div[2]/div[@class="rp"]/div')
         thumbs = driver.find_elements_by_xpath(
@@ -301,22 +279,8 @@ def getComment(driver, url, song):
         }
         if re.search(r'◆◆', comment['内容']) != None:
             tu = re.findall(r'(.*)◆◆(.*)', comment['内容'])[0]
-            # print(tu[0]+'回复了评论：'+tu[1])
             comment['内容'] = tu[0]
             comment['类型'] = '回复'
             comment['关联评论'] = tu[1]
         li.append(comment)
-    # print(li)
     return li
-
-# chrome_options = Options()
-# chrome_options.add_argument("--headless")
-# driver = webdriver.Chrome()
-# login(driver,dic)
-# user = input('请输入你要查找的用户：')
-# li = getUser(user, driver)
-# songs = getSongs(li, driver)
-# print('准备开始爬取歌单: ' + songs[0] + ' 中的内容')
-# driver.get(songs[1])
-# getSong(driver, songs[0])
-# driver.quit()

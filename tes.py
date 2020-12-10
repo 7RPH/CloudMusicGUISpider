@@ -166,15 +166,15 @@ class MainUi(QtWidgets.QMainWindow):
         giveValue(self.userdic, 'user', self.linLognUser.text())
         giveValue(self.userdic, 'pwd', self.linLognPwd.text())
         login(self.driver, self.userdic)
+        for i in range(self.userlayout.count()):
+            if i >= 7:
+                self.userlayout.itemAt(i).widget().setParent(None)
         if self.userdic['lognStatus']==1:
             newLabel=QLabel('登录成功，欢迎您!'+self.userdic['name'],self.user)
             self.userdic['myLoad']=0
             self.userlayout.addWidget(newLabel, 5, 4, 1, 1)
             print(self.userlayout.count())
         else:
-            for i in range(self.userlayout.count()+1):
-                     if i >= 7:
-                         self.userlayout.itemAt(i).widget().setParent(None)
             QMessageBox.information(self, "肥肠包钱", "登录失败,请重试", QMessageBox.Yes)
 
 
@@ -417,16 +417,6 @@ class MainUi(QtWidgets.QMainWindow):
             border-radius:10px;
         }''')
 
-        # #右侧QSS
-        # self.searchInput.setStyleSheet(
-        #     '''QLineEdit{
-        #             border:1px solid gray;
-        #             width:300px;
-        #             border-radius:10px;
-        #             padding:2px 4px;
-        #     }''')
-
-
         # 初始化
         self.rightLayout.addWidget(self.search)
 
@@ -434,7 +424,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
         logn = False  # 判定是否已经登录
         chrome_options = Options()
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         self.driver = webdriver.Chrome(chrome_options=chrome_options)
         url = "https://music.163.com/#/search/m/"
         self.driver.get(url)
@@ -456,8 +446,6 @@ class MainUi(QtWidgets.QMainWindow):
 
         self.userbtn.clicked.connect(
             lambda: (self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.user)))
-        # self.mySongbtn.clicked.connect(lambda: (
-        # self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.mySong)))
         self.mySongbtn.clicked.connect(self.myList)
         self.searchbtn.clicked.connect(lambda: (
         self.rightLayout.itemAt(0).widget().setParent(None), self.rightLayout.insertWidget(0, self.search)))
@@ -469,18 +457,6 @@ class MainUi(QtWidgets.QMainWindow):
         self.searchcombo.currentIndexChanged.connect(
             lambda: (giveValue(self.userdic, 'searchtype', self.searchcombo.currentIndex())))
         self.searchIcon.clicked.connect(lambda : (self.showList(search(self.driver, self.userdic, self.searchInput.text(),self.li))))
-
-        # self.save.clicked.connect(lambda: (giveValue(self.userdic, 'user', self.linLognUser.text())))
-        # self.save.clicked.connect(lambda: (giveValue(self.userdic, 'pwd', self.linLognPwd.text())))
         self.save.clicked.connect(self.lognUI)
 
 
-def main():
-    app = QtWidgets.QApplication(sys.argv)
-    gui = MainUi()
-    gui.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()
