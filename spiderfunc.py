@@ -121,7 +121,7 @@ def getSong(songlist,driver,I,wb):
         title = b[i].get_attribute('title')
         dic[title] = [a[i].get_attribute('href')]
     for i in dic:
-        getAsong(wb,I,i,dic[i][0],driver)
+        I=getAsong(wb,I,i,dic[i][0],driver)
     return I
 
 def getASonglist(songlist,driver):
@@ -229,13 +229,6 @@ def login(driver,dic):
         print('error')
 
     print(dic)
-
-
-def whoami(driver):
-    sleep(0.1)
-    driver.get('https://music.163.com/my/')
-    driver.find_element_by_xpath('/html/body/div[1]/div[1]/div/ul/li[2]').click()
-    return driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div/div[1]/div[1]/div/div[2]/div/div[2]/span[1]').find_element_by_tag_name('a')
 
 
 
