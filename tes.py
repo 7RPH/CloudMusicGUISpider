@@ -81,6 +81,10 @@ class MainUi(QtWidgets.QMainWindow):
 
 
     def SaveList(self,flag):
+        length=self.fileT.text()
+        if len(length)==0:
+            QMessageBox.information(self, "错误", "请求内容为空!")
+        else :
             try:
                 if flag == 0:
                     save(self.driver, self.userdic, self.savetext, self.fileT.text(), self.searchInput.text())
